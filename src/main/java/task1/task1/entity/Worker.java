@@ -18,7 +18,7 @@ public class Worker {
     private String name;
     @Column(nullable = false, unique = true)
     private String phoneNumber;
-    @ManyToOne
+    @OneToOne
     private Address address;
     @ManyToOne
     private Department department;

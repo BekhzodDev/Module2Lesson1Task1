@@ -25,19 +25,22 @@ public class WorkerService {
     WorkerRepository workerRepository;
 
     public Result addWorker(WorkerDto workerDto) {
-        Optional<Address> optionalAddress = addressRepository.findById(workerDto.getAddressId());
-        if (!optionalAddress.isPresent())
-            return new Result("Bunday address bazada mavjud emas", false);
         Optional<Department> optionalDepartment = departmentRepository.findById(workerDto.getDepartmentId());
         if (!optionalDepartment.isPresent())
             return new Result("Bunday departament bazada mavjud emas", false);
         if (workerRepository.existsByPhoneNumber(workerDto.getPhoneNumber()))
             return new Result("Bunday telefon raqamli ishchi bazada mavjud", false);
+        if (addressRepository.existsByStreetAndHomeNumber(workerDto.getStreet(), workerDto.getHomeNumber()))
+            return new Result("Bunday address band", false);
+        Address address = new Address();
+        address.setStreet(workerDto.getStreet());
+        address.setHomeNumber(workerDto.getHomeNumber());
+        Address savedAddress = addressRepository.save(address);
         Worker worker = new Worker();
         worker.setName(workerDto.getName());
         worker.setPhoneNumber(workerDto.getPhoneNumber());
-        worker.setAddress(optionalAddress.get());
         worker.setDepartment(optionalDepartment.get());
+        worker.setAddress(savedAddress);
         workerRepository.save(worker);
         return new Result("Yangi ishchi saqlandi", true);
     }
@@ -55,22 +58,24 @@ public class WorkerService {
         Optional<Worker> optionalWorker = workerRepository.findById(id);
         if (!optionalWorker.isPresent())
             return new Result("Bunday ishchi bazada mavjud emas", false);
-
-        Optional<Address> optionalAddress = addressRepository.findById(workerDto.getAddressId());
-        if (!optionalAddress.isPresent())
-            return new Result("Bunday address bazada mavjud emas", false);
         Optional<Department> optionalDepartment = departmentRepository.findById(workerDto.getDepartmentId());
         if (!optionalDepartment.isPresent())
             return new Result("Bunday departament bazada mavjud emas", false);
         if (workerRepository.existsByPhoneNumberAndIdNot(workerDto.getPhoneNumber(), id))
             return new Result("Bunday telefon raqamli ishchi bazada mavjud", false);
         Worker worker = optionalWorker.get();
+        Address address= worker.getAddress();
+        if (addressRepository.existsByStreetAndHomeNumberAndIdNot(workerDto.getStreet(), workerDto.getHomeNumber(), address.getId()))
+            return new Result("Bunday address band", false);
+        address.setStreet(workerDto.getStreet());
+        address.setHomeNumber(workerDto.getHomeNumber());
+        addressRepository.save(address);
         worker.setName(workerDto.getName());
         worker.setPhoneNumber(workerDto.getPhoneNumber());
-        worker.setAddress(optionalAddress.get());
         worker.setDepartment(optionalDepartment.get());
+        worker.setAddress(address);
         workerRepository.save(worker);
-        return new Result("Ishchi taxrirlandi", true);
+        return new Result("Yangi ishchi saqlandi", true);
     }
 
     public Result deleteWorker(Integer id) {

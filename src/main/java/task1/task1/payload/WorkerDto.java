@@ -3,6 +3,7 @@ package task1.task1.payload;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import task1.task1.entity.Address;
 
 @Data
 @NoArgsConstructor
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class WorkerDto {
     private String name;
     private String phoneNumber;
-    private Integer addressId;
     private Integer departmentId;
+    private String street;
+    private String homeNumber;
 }

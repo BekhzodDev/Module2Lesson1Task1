@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class CompanyDto {
     private String corpName;
     private String directorName;
-    private Integer addressId;
+    private String street;
+    private String homeName;
 }

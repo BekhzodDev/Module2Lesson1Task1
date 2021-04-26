@@ -22,13 +22,16 @@ public class CompanyService {
     public Result addCompany(CompanyDto companyDto) {
         if (companyRepository.existsByCorpName(companyDto.getCorpName()))
             return new Result("Bunday nom band", false);
-        Optional<Address> optionalAddress = addressRepository.findById(companyDto.getAddressId());
-        if (!optionalAddress.isPresent())
-            return new Result("Bunday address mavjud emas", false);
+        if (addressRepository.existsByStreetAndHomeNumber(companyDto.getStreet(), companyDto.getHomeName()))
+            return new Result("Bunday address band", false);
+        Address address = new Address();
+        address.setStreet(companyDto.getStreet());
+        address.setHomeNumber(companyDto.getHomeName());
+        Address savedAddress = addressRepository.save(address);
         Company company = new Company();
         company.setCorpName(companyDto.getCorpName());
         company.setDirectorName(companyDto.getDirectorName());
-        company.setAddress(optionalAddress.get());
+        company.setAddress(savedAddress);
         companyRepository.save(company);
         return new Result("Yangi kompaniya saqlandi", true);
     }
@@ -46,15 +49,18 @@ public class CompanyService {
         Optional<Company> optionalCompany = companyRepository.findById(id);
         if (!optionalCompany.isPresent())
             return new Result("Bunday company mavjud emas", false);
-        if (companyRepository.existsByCorpName(companyDto.getCorpName()))
+        if (companyRepository.existsByCorpNameAndIdNot(companyDto.getCorpName(), id))
             return new Result("Bunday nom band", false);
-        Optional<Address> optionalAddress = addressRepository.findById(companyDto.getAddressId());
-        if (!optionalAddress.isPresent())
-            return new Result("Bunday address mavjud emas", false);
         Company company = optionalCompany.get();
+        Address savedAddress = company.getAddress();
+        if (addressRepository.existsByStreetAndHomeNumberAndIdNot(companyDto.getStreet(), companyDto.getHomeName(), savedAddress.getId()))
+            return new Result("Bunday address band", false);
+        savedAddress.setStreet(companyDto.getStreet());
+        savedAddress.setHomeNumber(companyDto.getHomeName());
+        addressRepository.save(savedAddress);
         company.setCorpName(companyDto.getCorpName());
         company.setDirectorName(companyDto.getDirectorName());
-        company.setAddress(optionalAddress.get());
+        company.setAddress(savedAddress);
         companyRepository.save(company);
         return new Result("Kimpaniya taxrirlandi", true);
     }
